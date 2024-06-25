@@ -1,0 +1,26 @@
+@startuml
+
+actor User
+
+participant TodoList
+participant TodoWrapper
+participant TodoForm
+participant Backend
+
+User -> TodoList : Clica no ícone de edição
+
+TodoList -> TodoWrapper : editTodo()
+TodoWrapper -> TodoForm : Atualiza o formulário com dados da tarefa
+TodoWrapper -> User : Mostra o formulário para edição
+
+User -> TodoForm : Edita a descrição da tarefa
+User -> TodoForm : Clica em "Salvar"
+
+TodoForm -> TodoWrapper : handleSubmit()
+TodoWrapper -> Backend : editTodo()
+Backend --> TodoWrapper : Retorna confirmação
+
+TodoWrapper -> TodoList : Atualiza a tarefa na lista
+TodoWrapper -> User : Exibe a tarefa atualizada
+
+@enduml

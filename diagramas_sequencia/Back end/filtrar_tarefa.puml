@@ -1,0 +1,46 @@
+@startuml
+title Diagrama de Sequência - Filtrar Tarefas por Tipo ou Prioridade
+actor Usuário
+Boundary Frontend
+Boundary SpringBoot
+Control taskController
+Entity Task
+Participant taskService
+Participant taskRepository
+Boundary TypedQuery
+Participant Hibernate
+Database TodoList
+
+activate SpringBoot
+Usuário -> Frontend: Filtrar Tarefas
+activate Usuário
+activate Frontend
+Frontend -> SpringBoot: GET /api/tasks/filter?type={type}&priority={priority}
+group Roteiro01Application [Spring Boot Java Application]
+SpringBoot -> taskController: filterTasks(type, priority)
+activate taskController
+taskController -> taskService: filterTasks(type, priority)
+activate taskService
+taskService -> taskRepository: findByTypeAndPriority(type, priority)
+activate taskRepository
+taskRepository -> TypedQuery: getResultList(TaskDto) WHERE type = {type} AND priority = {priority}
+group JPA Framework [Hibernate]
+activate TypedQuery
+TypedQuery -> Hibernate: List(TaskDto)
+activate Hibernate
+Hibernate -> TodoList: SELECT * FROM Tasks WHERE type = {type} AND priority = {priority}
+TodoList --> Hibernate: Table Tasks
+Hibernate --> TypedQuery: Table Tasks
+TypedQuery --> taskRepository: List<Task>
+deactivate TypedQuery
+end
+taskRepository --> taskService: List<Task>
+deactivate taskRepository
+taskService --> taskController: List<Task> filteredTasks
+deactivate taskService
+taskController --> SpringBoot: ResponseEntity.ok(filteredTasks)
+deactivate taskController
+end
+SpringBoot --> Frontend: ResponseEntity.ok(filteredTasks)
+Frontend --> Usuário: <list>Task
+@enduml

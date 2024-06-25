@@ -1,0 +1,47 @@
+@startuml
+title Diagrama de Sequência - Listar todas as Tarefas
+actor Usuário
+Boundary Frontend
+Boundary SpringBoot
+Control taskController
+Entity Task
+Participant taskService
+Participant taskRepository
+Boundary TypedQuery
+Participant Hibernate
+Database TodoList
+
+activate SpringBoot
+Usuário -> Frontend: Listar todas as Tarefas
+activate Usuário
+activate Frontend
+activate TodoList
+Frontend -> SpringBoot: GET /api/tasks/
+group Roteiro01Application [Spring Boot Java Application]
+SpringBoot -> taskController: listAll(Pageable)
+activate taskController
+taskController -> taskService: listAll(pageable)
+activate taskService
+taskService -> taskRepository: findAll(pageable)
+activate taskRepository
+taskRepository -> TypedQuery: getResultList(TaskDto)
+group JPA Framework [Hibernate]
+activate TypedQuery
+TypedQuery -> Hibernate: List(TaskDto)
+activate Hibernate
+Hibernate -> TodoList: SELECT * FROM Tasks
+TodoList --> Hibernate: Table Tasks
+Hibernate --> TypedQuery: Table Tasks
+TypedQuery --> taskRepository: Page<Tasks>
+deactivate TypedQuery
+end
+taskRepository --> taskService: Page<Task>
+deactivate taskRepository
+taskService --> taskController: Page<Task> events
+deactivate taskService
+taskController --> SpringBoot: ResponseEntity.ok(events)
+deactivate taskController
+end
+SpringBoot --> Frontend: ResponseEntity.ok(events)
+Frontend --> Usuário: <list>Task
+@enduml

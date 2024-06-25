@@ -1,0 +1,40 @@
+@startuml
+title Diagrama de Sequência - Confirmar Tarefa
+actor Usuário
+Boundary Frontend
+Boundary SpringBoot
+Control taskController
+Entity Task
+Participant taskService
+Participant taskRepository
+Database TodoList
+
+activate SpringBoot
+Usuário -> Frontend: Confirmar Tarefa
+activate Usuário
+activate Frontend
+Frontend -> SpringBoot: PUT /api/tasks/{id}/confirm
+group Roteiro01Application [Spring Boot Java Application]
+SpringBoot -> taskController: confirmTask(id)
+activate taskController
+taskController -> taskService: confirmTask(id)
+activate taskService
+taskService -> taskRepository: findById(id)
+activate taskRepository
+taskRepository -> TodoList: SELECT * FROM Tasks WHERE id = {id}
+TodoList --> taskRepository: Task
+taskRepository --> taskService: Task
+deactivate taskRepository
+taskService -> taskRepository: save(Task)
+taskRepository -> TodoList: UPDATE Tasks SET completed = true WHERE id = {id}
+TodoList --> taskRepository: Task Updated
+taskRepository --> taskService: Task
+deactivate taskRepository
+taskService --> taskController: Task
+deactivate taskService
+taskController --> SpringBoot: ResponseEntity.ok(Task)
+deactivate taskController
+end
+SpringBoot --> Frontend: ResponseEntity.ok(Task)
+Frontend --> Usuário: Task Confirmed
+@enduml
